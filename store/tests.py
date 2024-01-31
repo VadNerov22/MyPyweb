@@ -4,9 +4,9 @@ from django.test import TestCase
 from rest_framework.test import APIRequestFactory
 from rest_framework import status
 
-from .models import Cart, Product, Category
-from .serializers import CartSerializer
-from .views import CartViewSet
+from .models import Cart, Product, Category, Wishlist
+from .serializers import CartSerializer, WishlistSerializer
+from .views import CartViewSet, WishListViewSet
 
 
 class CartViewSetTestCase(TestCase):
@@ -93,6 +93,86 @@ class CartSerializerTestCase(TestCase):
            'id': self.cart_item.id,
            'user': self.user.id,
            'quantity': self.cart_item.quantity,
+           'product': self.product.id,
+       }
+
+       # Проверка, что на выходе сериализатора данные соответствуют нужным
+       self.assertEqual(serializer.data, expected_data)
+
+
+class WishListViewSetTestCase(TestCase):
+    """
+    Тестирование объекта WishListViewSet
+
+    При тестировании проверяем правильность создания объектов и отрабатывания методов:
+       create (test_create_wish_item),
+       update (test_update_wish_item),
+       delete (test_delete_wish_item).
+    """
+    fixtures = ['testdata.json']
+    def setUp(self):
+
+       # Создание объекта моделирующего отправление запроса
+       self.factory = APIRequestFactory()
+
+       self.user = User.objects.first()
+       self.product = Product.objects.first()
+
+    def test_create_wish_item(self):
+       # Отправляем запрос на адрес /wishlist/ с данными
+       request = self.factory.post('/wishlist/', {'product': self.product.id})
+       # Записываем пользователя в запрос
+       request.user = self.user
+       # Инициализуем вызов POST запроса в представлении
+       view = WishListViewSet.as_view({'post': 'create'})
+       response = view(request)
+       # Проводим проверки тех действий, что сделало представление
+       self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+       self.assertEqual(response.data['message'], 'Product added to Wishlist')
+       self.assertEqual(Wishlist.objects.count(), 1)
+
+    def test_update_wish_item(self):
+       wish_item = Wishlist.objects.create(user=self.user, product=self.product)
+       request = self.factory.put(f'/wishlist/{wish_item.id}/', {'quantity': 5})
+       request.user = self.user
+       view = WishListViewSet.as_view({'put': 'update'})
+
+       response = view(request, pk=wish_item.id)
+       self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+       self.assertEqual(response.data['message'], 'Product change in Wishlist')
+
+       wish_item.refresh_from_db()
+       self.assertEqual(wish_item.quantity, 5)
+
+    def test_delete_wish_item(self):
+       wish_item = Wishlist.objects.create(user=self.user, product=self.product)
+       request = self.factory.delete(f'/wishlist/{wish_item.id}/')
+       request.user = self.user
+       view = WishListViewSet.as_view({'delete': 'destroy'})
+
+       response = view(request, pk=wish_item.id)
+       self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+       self.assertEqual(response.data['message'], 'Product delete from Wishlist')
+       self.assertEqual(Wishlist.objects.count(), 0)
+
+
+class WishlistSerializerTestCase(TestCase):
+    """
+    Проверка сериализатора
+    """
+    fixtures = ['testdata.json']
+
+    def setUp(self):
+       self.user = User.objects.first()
+       self.product = Product.objects.first()
+       self.wish_item = Wishlist.objects.create(user=self.user, product=self.product)
+
+    def test_wish_serializer(self):
+       serializer = WishlistSerializer(instance=self.wish_item)
+       expected_data = {
+           'id': self.wish_item.id,
+           'user': self.user.id,
+           'quantity': self.wish_item.quantity,
            'product': self.product.id,
        }
 
