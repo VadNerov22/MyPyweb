@@ -1,13 +1,13 @@
 {% extends 'login/base.html' %}
 {% load static %}
 {% block content %}
-				<form action="." method="post" class="login100-form validate-form">
+                <form action="." method="post" class="login100-form validate-form">
 					{% csrf_token %}
 					<span class="login100-form-title">
 						Create New Member
 					</span>
 
-					<div class="wrap-input100 validate-input" data-validate = "Valid email is required: ex@abc.xyz">
+					<div class="wrap-input100">
 						<input class="input100" type="text" name="username" placeholder="Username">
 						<span class="focus-input100"></span>
 						<span class="symbol-input100">
@@ -16,9 +16,12 @@
 					</div>
 					{% if errors.username %}
 					<span class="txt1">
-						{{errors.username}}
+					  {{errors.username}}
 					</span>
 					{% endif %}
+					{% comment %}
+					<div class="wrap-input100">
+						{% endcomment %}
                     <div class="wrap-input100 validate-input" data-validate = "Valid email is required: ex@abc.xyz">
                         <input class="input100" type="text" name="email" placeholder="Email">
                         <span class="focus-input100"></span>
@@ -28,9 +31,10 @@
                     </div>
 					{% if errors.email %}
 					<span class="txt1">
-						{{errors.email}}
+					  {{errors.email}}
 					</span>
 					{% endif %}
+
 					<div class="wrap-input100 validate-input" data-validate = "Password is required">
 						<input class="input100" type="password" name="password1" placeholder="Password">
 						<span class="focus-input100"></span>
@@ -40,7 +44,7 @@
 					</div>
 					{% if errors.password1 %}
 					<span class="txt1">
-						{{errors.password1}}
+					  {{errors.password1}}
 					</span>
 					{% endif %}
                     <div class="wrap-input100 validate-input" data-validate = "Password is required">
@@ -52,7 +56,7 @@
 					</div>
 					{% if errors.password2 %}
 					<span class="txt1">
-						{{errors.password2}}
+					  {{errors.password2}}
 					</span>
 					{% endif %}
 					<div class="container-login100-form-btn">

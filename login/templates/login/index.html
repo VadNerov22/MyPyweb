@@ -7,7 +7,7 @@
 						Member Login
 					</span>
 
-					<div class="wrap-input100 validate-input" data-validate = "Valid email is required: ex@abc.xyz">
+					<div class="wrap-input100">
 						<input class="input100" type="text" name="username" placeholder="Username">
 						<span class="focus-input100"></span>
 						<span class="symbol-input100">
@@ -19,6 +19,9 @@
   						{{errors.username}}
 					</span>
 					{% endif %}
+					{% comment %}
+					<div class="wrap-input100">
+						{% endcomment %}
 
 					<div class="wrap-input100 validate-input" data-validate = "Password is required">
 						<input class="input100" type="password" name="password" placeholder="Password">
@@ -29,7 +32,7 @@
 					</div>
 					{% if errors.password %}
 					<span class="txt1">
-  						{{errors.password}}
+						{{errors.password}}
 					</span>
 					{% endif %}
 
