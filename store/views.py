@@ -117,7 +117,7 @@ class WishlistView(View):
    def get(self, request):
        if request.user.is_authenticated:
            # код который необходим для обработчика
-           products = Product.objects.filter(pk__in=Wishlist.objects.filter(user=request.user)).values(
+           products = Product.objects.filter(pk__in=Wishlist.objects.filter(user=request.user).values('product')).values(
                'id', 'name', 'image', 'description', 'price')
            return render(request, "store/wishlist.html", {"data": products})
        # Иначе отправляет авторизироваться
