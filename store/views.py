@@ -117,11 +117,28 @@ class WishlistView(View):
    def get(self, request):
        if request.user.is_authenticated:
            # код который необходим для обработчика
-           products = Product.objects.filter(pk__in=Wishlist.objects.filter(user=request.user)).values(
+           products = Product.objects.filter(pk__in=Wishlist.objects.filter(user=request.user).values('product')).values(
                'id', 'name', 'image', 'description', 'price')
            return render(request, "store/wishlist.html", {"data": products})
        # Иначе отправляет авторизироваться
        return redirect('login:login')  # from django.shortcuts import redirect
+
+   def add_wish_product(self, request):
+       # Проверка товара, что он уже есть в Избарнном
+       wish_products = Wishlist.objects.filter(user=request.user).values('product')
+       if wish_products:  # Если продукт уже есть в Избарнном
+           return render(request, 'store/shop.html')
+
+       else:  # Если продукта нет в Избарнном, создаём объект по умолчанию (quantity по умолчанию = 1)
+           # wish_product = Wishlist(user=request.user, product=request.data.get('product'))
+           pass
+
+       # wish_product.save()  # Сохранили объект в БД
+       return render(request, 'store/shop.html')
+
+   def dell_wish_product(self, request, *args, **kwargs):
+       # Wishlist.objects.filter(user=request.user, product=request.data.get('product')).delete()
+       return render(request, 'store/wishlist.html')
 
 
 class WishListViewSet(viewsets.ModelViewSet):

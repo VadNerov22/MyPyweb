@@ -33,7 +33,7 @@
                                     соответственно пишите ссылку на обработчик. Обработчик принимает параметр id товара
                                     который он должен удалить из БД, удаляет его и возвращает перенаправление (redirect)
                                     на обработчик wishlist, который показывает страницу wishlist-->
-                                    <td class="product-remove"><a href="#"><span class="ion-ios-close"></span></a></td>
+                                    <td class="product-remove"><a href="{% url 'store:dell_wish_product' %}"><span class="ion-ios-close"></span></a></td>
                                     <!-- При нажатии на картинку (подставить из БД) должен быть переход на соответствующий товар ссылку прописать в href-->
                                     <td class="image-prod"><a href="{% url 'store:product' product.id %}"><div class="img" style="background-image:url('/{{ product.image }}');"></div></a></td>
 
