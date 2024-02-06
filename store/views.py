@@ -123,22 +123,24 @@ class WishlistView(View):
        # Иначе отправляет авторизироваться
        return redirect('login:login')  # from django.shortcuts import redirect
 
-   def add_wish_product(self, request):
-       # Проверка товара, что он уже есть в Избарнном
-       wish_products = Wishlist.objects.filter(user=request.user).values('product')
-       if wish_products:  # Если продукт уже есть в Избарнном
-           return render(request, 'store/shop.html')
+   def add_wish_product(self, request, **kwargs):
+       # Добавляем товар в Избранное, если его там нет
+       product = get_object_or_404(Product, id=kwargs['id'])
+       wish_product = Wishlist.objects.get_or_create(user=request.user, product=product)
 
-       else:  # Если продукта нет в Избарнном, создаём объект по умолчанию (quantity по умолчанию = 1)
-           # wish_product = Wishlist(user=request.user, product=request.data.get('product'))
-           pass
+       if wish_product:  # Если продукт уже есть в Избарнном
+           return redirect("store:shop")
 
-       # wish_product.save()  # Сохранили объект в БД
-       return render(request, 'store/shop.html')
+       else:
+           wish_product = Wishlist(user=request.user, product=product)
+           wish_product.save()
+           return redirect("store:shop")
 
-   def dell_wish_product(self, request, *args, **kwargs):
-       # Wishlist.objects.filter(user=request.user, product=request.data.get('product')).delete()
-       return render(request, 'store/wishlist.html')
+   def dell_wish_product(self, request, **kwargs):
+       # Удаляем товар из Избранного
+       wish_product = Wishlist.objects.filter(user=request.user, product=kwargs['id'])
+       wish_product.delete()
+       return redirect("store:wishlist")
 
 
 class WishListViewSet(viewsets.ModelViewSet):
@@ -150,24 +152,22 @@ class WishListViewSet(viewsets.ModelViewSet):
         return self.queryset.filter(user=self.request.user)
 
     def create(self, request, *args, **kwargs):
-        # Проверка товара, что он уже есть в Избарнном
-        wish_items = self.get_queryset().filter(product__id=request.data.get('product'))
+        # Сохранили объект в БД
+        wish_items = self.get_queryset().filter(product__id=request.data.get('product')) # Проверка товара, что он уже есть в Избарнном
 
         if wish_items:  # Если продукт уже есть в Избарнном
             wish_item = wish_items[0]
-            if request.data.get('quantity'):  # Если в запросе передан параметр quantity,
-                # то добавляем значение к значению в БД
+            if request.data.get('quantity'):
                 wish_item.quantity += int(request.data.get('quantity'))
-            else:  # Иначе просто добавляем значение по умолчению 1
+            else:
                 wish_item.quantity += 1
         else:  # Если продукта нет в Избарнном
-            product = get_object_or_404(Product, id=request.data.get('product'))  # Получаем продукт и
-            # проверяем что он вообще существует, если его нет то выйдет ошибка 404
-            if request.data.get('quantity'):  # Если передаём точное количество продукта, то передаём его
+            product = get_object_or_404(Product, id=request.data.get('product'))
+            if request.data.get('quantity'):
                 wish_item = Wishlist(user=request.user, product=product, quantity=request.data.get('quantity'))
-            else:  # Иначе создаём объект по умолчанию (quantity по умолчанию = 1)
+            else:
                 wish_item = Wishlist(user=request.user, product=product)
-        wish_item.save()  # Сохранили объект в БД
+        wish_item.save()
         return response.Response({'message': 'Product added to Wishlist'}, status=201)
 
     def update(self, request, *args, **kwargs):
@@ -182,6 +182,7 @@ class WishListViewSet(viewsets.ModelViewSet):
         return response.Response({'message': 'Product change in Wishlist'}, status=201)
 
     def destroy(self, request, *args, **kwargs):
+        # В kwargs передаётся id строки для удаления в БД, под параметром pk
         wish_item = self.get_queryset().get(id=kwargs['pk'])
         wish_item.delete()
         return response.Response({'message': 'Product delete from Wishlist'}, status=201)
